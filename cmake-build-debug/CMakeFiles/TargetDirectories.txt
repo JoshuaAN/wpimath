@@ -1,0 +1,3 @@
+/Users/joshuanichols/CLionProjects/wpimath/cmake-build-debug/CMakeFiles/wpimath.dir
+/Users/joshuanichols/CLionProjects/wpimath/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/joshuanichols/CLionProjects/wpimath/cmake-build-debug/CMakeFiles/rebuild_cache.dir

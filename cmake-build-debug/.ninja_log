@@ -1,0 +1,6 @@
+# ninja log v5
+1	887	1654182343499468387	CMakeFiles/wpimath.dir/src/test/native/cpp/optimization/main.cpp.o	98c838a9f90ba7b8
+382	420	1654175436076656895	wpimath	40d2a5a1721a8e7c
+1	413	1654182343025719864	CMakeFiles/wpimath.dir/src/main/native/cpp/SmallVector.cpp.o	4cb9821a60dd6501
+0	35	1654194046411699008	build.ninja	4d7b464d3c5268c0
+0	53	1654194046411699008	build.ninja	74f0a5133dab9c1f

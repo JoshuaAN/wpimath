@@ -56,6 +56,41 @@ build CMakeFiles/wpimath.dir/src/test/native/cpp/optimization/main.cpp.o: CXX_CO
   OBJECT_DIR = CMakeFiles/wpimath.dir
   OBJECT_FILE_DIR = CMakeFiles/wpimath.dir/src/test/native/cpp/optimization
 
+build CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/AutodiffWrapper.cpp.o: CXX_COMPILER__wpimath_Debug /Users/joshuanichols/CLionProjects/wpimath/src/main/native/cpp/optimization/AutodiffWrapper.cpp || cmake_object_order_depends_target_wpimath
+  DEP_FILE = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/AutodiffWrapper.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++17
+  INCLUDES = -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/autodiff/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/eigeninclude
+  OBJECT_DIR = CMakeFiles/wpimath.dir
+  OBJECT_FILE_DIR = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization
+
+build CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/EqualityConstraint.cpp.o: CXX_COMPILER__wpimath_Debug /Users/joshuanichols/CLionProjects/wpimath/src/main/native/cpp/optimization/EqualityConstraint.cpp || cmake_object_order_depends_target_wpimath
+  DEP_FILE = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/EqualityConstraint.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++17
+  INCLUDES = -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/autodiff/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/eigeninclude
+  OBJECT_DIR = CMakeFiles/wpimath.dir
+  OBJECT_FILE_DIR = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization
+
+build CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/InequalityConstraint.cpp.o: CXX_COMPILER__wpimath_Debug /Users/joshuanichols/CLionProjects/wpimath/src/main/native/cpp/optimization/InequalityConstraint.cpp || cmake_object_order_depends_target_wpimath
+  DEP_FILE = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/InequalityConstraint.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++17
+  INCLUDES = -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/autodiff/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/eigeninclude
+  OBJECT_DIR = CMakeFiles/wpimath.dir
+  OBJECT_FILE_DIR = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization
+
+build CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/Problem.cpp.o: CXX_COMPILER__wpimath_Debug /Users/joshuanichols/CLionProjects/wpimath/src/main/native/cpp/optimization/Problem.cpp || cmake_object_order_depends_target_wpimath
+  DEP_FILE = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/Problem.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++17
+  INCLUDES = -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/autodiff/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/eigeninclude
+  OBJECT_DIR = CMakeFiles/wpimath.dir
+  OBJECT_FILE_DIR = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization
+
+build CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/Variable.cpp.o: CXX_COMPILER__wpimath_Debug /Users/joshuanichols/CLionProjects/wpimath/src/main/native/cpp/optimization/Variable.cpp || cmake_object_order_depends_target_wpimath
+  DEP_FILE = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/Variable.cpp.o.d
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -std=gnu++17
+  INCLUDES = -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/autodiff/include -I/Users/joshuanichols/CLionProjects/wpimath/src/main/native/eigeninclude
+  OBJECT_DIR = CMakeFiles/wpimath.dir
+  OBJECT_FILE_DIR = CMakeFiles/wpimath.dir/src/main/native/cpp/optimization
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target wpimath
@@ -64,7 +99,7 @@ build CMakeFiles/wpimath.dir/src/test/native/cpp/optimization/main.cpp.o: CXX_CO
 #############################################
 # Link the executable wpimath
 
-build wpimath: CXX_EXECUTABLE_LINKER__wpimath_Debug CMakeFiles/wpimath.dir/src/test/native/cpp/optimization/main.cpp.o
+build wpimath: CXX_EXECUTABLE_LINKER__wpimath_Debug CMakeFiles/wpimath.dir/src/test/native/cpp/optimization/main.cpp.o CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/AutodiffWrapper.cpp.o CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/EqualityConstraint.cpp.o CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/InequalityConstraint.cpp.o CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/Problem.cpp.o CMakeFiles/wpimath.dir/src/main/native/cpp/optimization/Variable.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk
   OBJECT_DIR = CMakeFiles/wpimath.dir
   POST_BUILD = :

@@ -9,7 +9,7 @@
 #include <autodiff/reverse/var.hpp>
 #include <wpi/SymbolExports.h>
 
-#include "Eigen/Core"
+#include "frc/EigenCore.h"
 
 namespace frc {
 
@@ -40,8 +40,8 @@ class WPILIB_DLLEXPORT AutodiffWrapper {
   explicit AutodiffWrapper(int value);
   AutodiffWrapper& operator=(int rhs);
 
-  explicit AutodiffWrapper(const Eigen::Matrix<double, 1, 1>& value);
-  AutodiffWrapper& operator=(const Eigen::Matrix<double, 1, 1>& rhs);
+  explicit AutodiffWrapper(const frc::Matrixd<1, 1>& value);
+  AutodiffWrapper& operator=(const frc::Matrixd<1, 1>& rhs);
 
   friend AutodiffWrapper operator*(const AutodiffWrapper& lhs,
                                    const AutodiffWrapper& rhs) {
@@ -109,8 +109,11 @@ class WPILIB_DLLEXPORT AutodiffWrapper {
   //
   // std::monostate  empty; default constructor
   // autodiff::var   owning
+  // autodiff::var*  non-owning
   // ProblemRef      non-owning
-  mutable std::variant<std::monostate, autodiff::var, ProblemRef> m_value;
+  mutable std::variant<std::monostate, autodiff::var, autodiff::var*,
+                       ProblemRef>
+      m_value;
 };
 
 }  // namespace frc

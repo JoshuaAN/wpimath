@@ -8,7 +8,7 @@
 
 #include <wpi/SymbolExports.h>
 
-#include "Eigen/Core"
+#include "frc/EigenCore.h"
 #include "frc/optimization/AutodiffWrapper.h"
 #include "frc/optimization/ConstraintUtil.h"
 #include "frc/optimization/Variable.h"
@@ -53,32 +53,30 @@ Eigen::Matrix<EqualityConstraint, Rows, Cols> operator==(
     const Variable<Rows, Cols>& lhs, const Variable<Rows, Cols>& rhs) {
   return MakeEqualityConstraintMatrix<Rows, Cols>([=](int row, int col) {
     // Make right-hand side zero
-    return EqualityConstraint{lhs.GetAutodiffWrapper(row, col) -
-                              rhs.GetAutodiffWrapper(row, col)};
+    return EqualityConstraint{lhs.GetStorage()(row, col) -
+                              rhs.GetStorage()(row, col)};
   });
 }
 
 template <int Rows, int Cols>
 Eigen::Matrix<EqualityConstraint, Rows, Cols> operator==(
-    const Variable<Rows, Cols>& lhs,
-    const Eigen::Matrix<double, Rows, Cols>& rhs) {
+    const Variable<Rows, Cols>& lhs, const frc::Matrixd<Rows, Cols>& rhs) {
   Variable<Rows, Cols> rhsVar{rhs};
   return MakeEqualityConstraintMatrix<Rows, Cols>([=](int row, int col) {
     // Make right-hand side zero
-    return EqualityConstraint{lhs.GetAutodiffWrapper(row, col) -
-                              rhsVar.GetAutodiffWrapper(row, col)};
+    return EqualityConstraint{lhs.GetStorage()(row, col) -
+                              rhsVar.GetStorage()(row, col)};
   });
 }
 
 template <int Rows, int Cols>
 Eigen::Matrix<EqualityConstraint, Rows, Cols> operator==(
-    const Eigen::Matrix<double, Rows, Cols>& lhs,
-    const Variable<Rows, Cols>& rhs) {
+    const frc::Matrixd<Rows, Cols>& lhs, const Variable<Rows, Cols>& rhs) {
   Variable<Rows, Cols> lhsVar{lhs};
   return MakeEqualityConstraintMatrix<Rows, Cols>([=](int row, int col) {
     // Make right-hand side zero
-    return EqualityConstraint{lhsVar.GetAutodiffWrapper(row, col) -
-                              rhs.GetAutodiffWrapper(row, col)};
+    return EqualityConstraint{lhsVar.GetStorage()(row, col) -
+                              rhs.GetStorage()(row, col)};
   });
 }
 
@@ -90,7 +88,7 @@ Eigen::Matrix<EqualityConstraint, Rows, Cols> operator==(
   AutodiffWrapper rhsVar{rhs};
   return MakeEqualityConstraintMatrix<Rows, Cols>([=](int row, int col) {
     // Make right-hand side zero
-    return EqualityConstraint{lhs.GetAutodiffWrapper(row, col) - rhsVar};
+    return EqualityConstraint{lhs.GetStorage()(row, col) - rhsVar};
   });
 }
 
@@ -102,7 +100,7 @@ Eigen::Matrix<EqualityConstraint, Rows, Cols> operator==(
   AutodiffWrapper lhsVar{lhs};
   return MakeEqualityConstraintMatrix<Rows, Cols>([=](int row, int col) {
     // Make right-hand side zero
-    return EqualityConstraint{lhsVar - rhs.GetAutodiffWrapper(row, col)};
+    return EqualityConstraint{lhsVar - rhs.GetStorage()(row, col)};
   });
 }
 

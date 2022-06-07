@@ -10,165 +10,331 @@
 
 #include <wpi/SymbolExports.h>
 
-#include "Eigen/Core"
+#include "frc/EigenCore.h"
 #include "frc/optimization/AutodiffWrapper.h"
 
 namespace frc {
 
-template <int Rows, int Cols>
+template <int _Rows, int _Cols>
 class Variable {
  public:
   Variable() = default;
 
-  template <int Rows2 = Rows, int Cols2 = Cols,
-            std::enable_if_t<Rows2 == 1 && Cols2 == 1, int> = 0>
-  Variable(double value) {  // NOLINT
-    m_storage(0, 0) = value;
-  }
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 == 1, int> = 0>
+  Variable(double value) : m_storage{{AutodiffWrapper{value}}} {}  // NOLINT
 
   Variable(std::initializer_list<double> values) : m_storage{values} {}
 
   Variable(std::initializer_list<std::initializer_list<double>> values)
       : m_storage{values} {}
 
-  template <int Rows2 = Rows, int Cols2 = Cols,
-            std::enable_if_t<Rows2 == 1 && Cols2 == 1, int> = 0>
-  Variable(const AutodiffWrapper& rhs) {  // NOLINT
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 == 1, int> = 0>
+  explicit Variable(const AutodiffWrapper& rhs) {
     m_storage(0, 0) = rhs;
   }
 
-  template <int Rows2 = Rows, int Cols2 = Cols,
-            std::enable_if_t<Rows2 == 1 && Cols2 == 1, int> = 0>
-  Variable(AutodiffWrapper&& rhs) {  // NOLINT
-    m_storage(0, 0) = std::move(rhs);
-  }
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 == 1, int> = 0>
+  explicit Variable(AutodiffWrapper&& rhs) : m_storage{std::move(rhs)} {}
 
-  Variable(const Eigen::Matrix<double, Rows, Cols>& values) {  // NOLINT
-    for (size_t row = 0; row < Rows; ++row) {
-      for (size_t col = 0; col < Cols; ++col) {
+  Variable(const frc::Matrixd<_Rows, _Cols>& values)  // NOLINT
+      : m_storage{values.template cast<AutodiffWrapper>()} {}
+
+  Variable& operator=(const frc::Matrixd<_Rows, _Cols>& values) {
+    for (size_t row = 0; row < _Rows; ++row) {
+      for (size_t col = 0; col < _Cols; ++col) {
         m_storage(row, col) = values(row, col);
       }
     }
+
+    return *this;
   }
 
-  Variable(Eigen::Matrix<double, Rows, Cols>&& values) {  // NOLINT
-    for (size_t row = 0; row < Rows; ++row) {
-      for (size_t col = 0; col < Cols; ++col) {
-        m_storage(row, col) = std::move(values(row, col));
+  explicit Variable(frc::Matrixd<_Rows, _Cols>&& values)
+      : m_storage{values.template cast<AutodiffWrapper>()} {}
+
+  Variable& operator=(frc::Matrixd<_Rows, _Cols>&& values) {
+    for (size_t row = 0; row < _Rows; ++row) {
+      for (size_t col = 0; col < _Cols; ++col) {
+        m_storage(row, col) = values(row, col);
       }
     }
+
+    return *this;
   }
 
-  Variable(const Eigen::Matrix<AutodiffWrapper, Rows, Cols>& values)  // NOLINT
+  explicit Variable(const Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>& values)
       : m_storage{values} {}
 
-  Variable(Eigen::Matrix<AutodiffWrapper, Rows, Cols>&& values)  // NOLINT
+  Variable& operator=(
+      const Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>& values) {
+    m_storage = values;
+    return *this;
+  }
+
+  explicit Variable(Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>&& values)
       : m_storage{std::move(values)} {}
 
-  auto operator()(int row, int col) {
+  Variable& operator=(Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>&& values) {
+    m_storage = std::move(values);
+    return *this;
+  }
+
+  Variable<1, 1> operator()(int row, int col) {
     return Variable<1, 1>{m_storage(row, col)};
   }
 
-  template <int Cols2 = Cols, std::enable_if_t<Cols2 == 1, int> = 0>
-  auto operator()(int row) {
+  template <int _Cols2 = _Cols, std::enable_if_t<_Cols2 == 1, int> = 0>
+  Variable<1, 1> operator()(int row) {
     return Variable<1, 1>{m_storage(row, 0)};
   }
 
-  template <int Rows2 = Rows, int Cols2 = Cols,
-            std::enable_if_t<Rows2 == 1 && Cols2 == 1, int> = 0>
-  Variable<Rows, Cols>& operator=(double rhs) {
+  /**
+   * Returns a block slice of the variable matrix.
+   *
+   * @tparam Block_Rows The number of rows in the block selection.
+   * @tparam Block_Cols The number of columns in the block selection.
+   * @param rowOffset The row offset of the block selection.
+   * @param colOffset The column offset of the block selection.
+   */
+  template <int Block_Rows, int Block_Cols>
+  Variable<Block_Rows, Block_Cols> Block(int rowOffset, int colOffset) {
+    Variable<Block_Rows, Block_Cols> ret;
+
+    for (int row = 0; row < Block_Rows; ++row) {
+      for (int col = 0; col < Block_Cols; ++col) {
+        ret.GetStorage()(row, col) =
+            m_storage(row + rowOffset, col + colOffset);
+      }
+    }
+
+    return ret;
+  }
+
+  /**
+   * Returns a row slice of the variable matrix.
+   *
+   * @param row The row to slice.
+   */
+  auto Row(int row) { return Block<1, _Cols>(row, 0); }
+
+  /**
+   * Returns a column slice of the variable matrix.
+   *
+   * @param col The column to slice.
+   */
+  auto Col(int col) { return Block<_Rows, 1>(0, col); }
+
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 == 1, int> = 0>
+  Variable<_Rows, _Cols>& operator=(double rhs) {
     m_storage(0, 0) = rhs;
     return *this;
   }
 
-  template <int RowsRhs, int ColsRhs>
-  friend Variable<Rows, ColsRhs> operator*(
-      const Variable<Rows, Cols>& lhs, const Variable<RowsRhs, ColsRhs>& rhs) {
-    static_assert(Cols == RowsRhs, "Matrix dimension mismatch for operator*");
-    return Eigen::Matrix<AutodiffWrapper, Rows, ColsRhs>{lhs.m_storage *
-                                                         rhs.GetStorage()};
+  /**
+   * Matrix multiplication operator.
+   *
+   * @param lhs Operator left-hand side.
+   * @param rhs Operator right-hand side.
+   */
+  template <int _RowsRhs, int _ColsRhs>
+  friend Variable<_Rows, _ColsRhs> operator*(
+      const Variable<_Rows, _Cols>& lhs,
+      const Variable<_RowsRhs, _ColsRhs>& rhs) {
+    static_assert(_Cols == _RowsRhs, "Matrix dimension mismatch for operator*");
+    return Variable<_Rows, _ColsRhs>{
+        Eigen::Matrix<AutodiffWrapper, _Rows, _ColsRhs>{lhs.m_storage *
+                                                        rhs.GetStorage()}};
   }
 
-  template <int RowsRhs, int ColsRhs>
-  Variable<Rows, ColsRhs>& operator*=(const Variable<RowsRhs, ColsRhs>& rhs) {
-    static_assert(Cols == RowsRhs, "Matrix dimension mismatch for operator*");
+  /**
+   * Matrix multiplication operator (only enabled when lhs is a scalar).
+   *
+   * @param lhs Operator left-hand side.
+   * @param rhs Operator right-hand side.
+   */
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 == 1, int> = 0>
+  friend Variable<_Rows, _Cols> operator*(const Variable<_Rows, _Cols>& lhs,
+                                          double rhs) {
+    return Variable<_Rows, _Cols>{Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>{
+        lhs.m_storage *
+        Eigen::Matrix<AutodiffWrapper, 1, 1>{AutodiffWrapper{rhs}}}};
+  }
+
+  /**
+   * Compound matrix multiplication-assignment operator.
+   *
+   * @param rhs Variable to multiply.
+   */
+  template <int _RowsRhs, int _ColsRhs>
+  Variable<_Rows, _ColsRhs>& operator*=(
+      const Variable<_RowsRhs, _ColsRhs>& rhs) {
+    static_assert(_Cols == _RowsRhs, "Matrix dimension mismatch for operator*");
     m_storage *= rhs.GetStorage();
     return *this;
   }
 
-  friend Variable<Rows, Cols> operator+(const Variable<Rows, Cols>& lhs,
-                                        const Variable<Rows, Cols>& rhs) {
-    return Eigen::Matrix<AutodiffWrapper, Rows, Cols>{lhs.m_storage +
-                                                      rhs.m_storage};
+  /**
+   * Compound matrix multiplication-assignment operator (only enabled when lhs
+   * is a scalar).
+   *
+   * @param rhs Variable to multiply.
+   */
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 == 1, int> = 0>
+  Variable<_Rows, _Cols>& operator*=(double rhs) {
+    m_storage *= Eigen::Matrix<AutodiffWrapper, 1, 1>{AutodiffWrapper{rhs}};
+    return *this;
   }
 
-  Variable<Rows, Cols>& operator+=(const Variable<Rows, Cols>& rhs) {
+  /**
+   * Binary addition operator.
+   *
+   * @param lhs Operator left-hand side.
+   * @param rhs Operator right-hand side.
+   */
+  friend Variable<_Rows, _Cols> operator+(const Variable<_Rows, _Cols>& lhs,
+                                          const Variable<_Rows, _Cols>& rhs) {
+    return Variable<_Rows, _Cols>{Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>{
+        lhs.m_storage + rhs.m_storage}};
+  }
+
+  /**
+   * Compound addition-assignment operator.
+   *
+   * @param rhs Variable to add.
+   */
+  Variable<_Rows, _Cols>& operator+=(const Variable<_Rows, _Cols>& rhs) {
     m_storage += rhs.m_storage;
     return *this;
   }
 
-  friend Variable<Rows, Cols> operator-(const Variable<Rows, Cols>& lhs,
-                                        const Variable<Rows, Cols>& rhs) {
-    return Eigen::Matrix<AutodiffWrapper, Rows, Cols>{lhs.m_storage -
-                                                      rhs.m_storage};
+  /**
+   * Binary subtraction operator.
+   *
+   * @param lhs Operator left-hand side.
+   * @param rhs Operator right-hand side.
+   */
+  friend Variable<_Rows, _Cols> operator-(const Variable<_Rows, _Cols>& lhs,
+                                          const Variable<_Rows, _Cols>& rhs) {
+    return Variable<_Rows, _Cols>{Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>{
+        lhs.m_storage - rhs.m_storage}};
   }
 
-  Variable<Rows, Cols>& operator-=(const Variable<Rows, Cols>& rhs) {
+  /**
+   * Compound subtraction-assignment operator.
+   *
+   * @param rhs Variable to subtract.
+   */
+  Variable<_Rows, _Cols>& operator-=(const Variable<_Rows, _Cols>& rhs) {
     m_storage -= rhs.m_storage;
     return *this;
   }
 
-  friend Variable<Rows, Cols> operator-(const Variable<Rows, Cols>& lhs) {
-    return Eigen::Matrix<AutodiffWrapper, Rows, Cols>{-lhs.m_storage};
+  /**
+   * Unary minus operator.
+   *
+   * @param lhs Operand for unary minus.
+   */
+  friend Variable<_Rows, _Cols> operator-(const Variable<_Rows, _Cols>& lhs) {
+    return Variable<_Rows, _Cols>{
+        Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>{-lhs.m_storage}};
   }
 
-  Variable<Cols, Rows> transpose() const {
-    return Eigen::Matrix<AutodiffWrapper, Cols, Rows>{m_storage.transpose()};
+  /**
+   * Returns the transpose of the variable matrix.
+   */
+  Variable<_Cols, _Rows> Transpose() const {
+    return Variable<_Cols, _Rows>{
+        Eigen::Matrix<AutodiffWrapper, _Cols, _Rows>{m_storage.transpose()}};
   }
 
-  AutodiffWrapper& GetAutodiffWrapper(int row, int col) {
-    return m_storage(row, col);
-  }
+  /**
+   * Returns number of rows in the matrix.
+   */
+  int Rows() const { return _Rows; }
 
-  const AutodiffWrapper& GetAutodiffWrapper(int row, int col) const {
-    return m_storage(row, col);
-  }
+  /**
+   * Returns number of columns in the matrix.
+   */
+  int Cols() const { return _Cols; }
 
-  template <int Cols2 = Cols, std::enable_if_t<Cols2 != 1, int> = 0>
-  double Value(int row, int col) const {
-    return m_storage(row, col).Value();
-  }
+  /**
+   * Returns an element of the variable matrix.
+   *
+   * @param row The row of the element to return.
+   * @param col The column of the element to return.
+   */
+  double Value(int row, int col) const { return m_storage(row, col).Value(); }
 
-  template <int Rows2 = Rows, int Cols2 = Cols,
-            std::enable_if_t<Rows2 != 1 && Cols2 == 1, int> = 0>
+  /**
+   * Returns a row of the variable column vector (only enabled when variable is
+   * a column vector).
+   *
+   * @param row The row of the element to return.
+   */
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 != 1 && _Cols2 == 1, int> = 0>
   double Value(int row) const {
     return m_storage(row, 0).Value();
   }
 
-  template <int Rows2 = Rows, int Cols2 = Cols,
-            std::enable_if_t<Rows2 != 1 || Cols2 != 1, int> = 0>
-  Eigen::Matrix<double, Rows, Cols> Value() const {
-    Eigen::Matrix<double, Rows, Cols> ret;
-    for (size_t row = 0; row < Rows; ++row) {
-      for (size_t col = 0; col < Cols; ++col) {
+  /**
+   * Returns a column of the variable row vector (only enabled when variable is
+   * a row vector).
+   *
+   * @param col The column of the element to return.
+   */
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 != 1, int> = 0>
+  double Value(int col) const {
+    return m_storage(0, col).Value();
+  }
+
+  /**
+   * Returns the underlying matrix representation of this variable.
+   */
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 != 1 || _Cols2 != 1, int> = 0>
+  frc::Matrixd<_Rows, _Cols> Value() const {
+    frc::Matrixd<_Rows, _Cols> ret;
+    for (size_t row = 0; row < _Rows; ++row) {
+      for (size_t col = 0; col < _Cols; ++col) {
         ret(row, col) = m_storage(row, col).Value();
       }
     }
     return ret;
   }
 
-  template <int Rows2 = Rows, int Cols2 = Cols,
-            std::enable_if_t<Rows2 == 1 && Cols2 == 1, int> = 0>
+  /**
+   * Returns the underlying scalar representation of this variable.
+   */
+  template <int _Rows2 = _Rows, int _Cols2 = _Cols,
+            std::enable_if_t<_Rows2 == 1 && _Cols2 == 1, int> = 0>
   double Value() const {
     return m_storage(0, 0).Value();
   }
 
-  const Eigen::Matrix<AutodiffWrapper, Rows, Cols>& GetStorage() const {
+  /**
+   * Returns the internal storage of autodiff variable wrappers.
+   */
+  Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>& GetStorage() {
+    return m_storage;
+  }
+
+  /**
+   * Returns the internal storage of autodiff variable wrappers.
+   */
+  const Eigen::Matrix<AutodiffWrapper, _Rows, _Cols>& GetStorage() const {
     return m_storage;
   }
 
  private:
-  Eigen::Matrix<AutodiffWrapper, Rows, Cols> m_storage;
+  Eigen::Matrix<AutodiffWrapper, _Rows, _Cols> m_storage;
 };
 
 /**

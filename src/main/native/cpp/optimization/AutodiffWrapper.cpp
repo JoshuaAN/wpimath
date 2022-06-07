@@ -8,10 +8,10 @@
 
 using namespace frc;
 
-AutodiffWrapper::AutodiffWrapper(autodiff::var& value) : m_value{value} {}
+AutodiffWrapper::AutodiffWrapper(autodiff::var& value) : m_value{&value} {}
 
 AutodiffWrapper& AutodiffWrapper::operator=(autodiff::var& value) {
-  m_value = value;
+  m_value = &value;
   return *this;
 }
 
@@ -29,16 +29,7 @@ AutodiffWrapper::AutodiffWrapper(Problem* problem, int index)
 AutodiffWrapper::AutodiffWrapper(double value) : m_value{value} {}
 
 AutodiffWrapper& AutodiffWrapper::operator=(double rhs) {
-  auto& variable = GetAutodiff();
-
-  // If variable is independent, update its storage in place. Otherwise, replace
-  // the variable with a new one.
-  if (auto independentExpr = std::dynamic_pointer_cast<
-          autodiff::detail::IndependentVariableExpr<double>>(variable.expr)) {
-    variable.update(rhs);
-  } else {
-    variable = rhs;
-  }
+  GetAutodiff().update(rhs);
   return *this;
 }
 
@@ -49,11 +40,10 @@ AutodiffWrapper& AutodiffWrapper::operator=(int rhs) {
   return operator=(static_cast<double>(rhs));
 }
 
-AutodiffWrapper::AutodiffWrapper(const Eigen::Matrix<double, 1, 1>& value)
+AutodiffWrapper::AutodiffWrapper(const frc::Matrixd<1, 1>& value)
     : AutodiffWrapper{value(0, 0)} {}
 
-AutodiffWrapper& AutodiffWrapper::operator=(
-    const Eigen::Matrix<double, 1, 1>& rhs) {
+AutodiffWrapper& AutodiffWrapper::operator=(const frc::Matrixd<1, 1>& rhs) {
   return operator=(rhs(0, 0));
 }
 
@@ -87,10 +77,12 @@ autodiff::var& AutodiffWrapper::GetAutodiff() {
     return std::get<1>(m_value);
   } else if (std::holds_alternative<autodiff::var>(m_value)) {
     return std::get<1>(m_value);
+  } else if (std::holds_alternative<autodiff::var*>(m_value)) {
+    return *std::get<2>(m_value);
   } else {
-    auto& varRef = std::get<2>(m_value);
+    auto& varRef = std::get<3>(m_value);
     auto& leaves = varRef.problem->m_leaves;
-    return leaves[varRef.index];
+    return leaves(varRef.index);
   }
 }
 
@@ -100,9 +92,11 @@ const autodiff::var& AutodiffWrapper::GetAutodiff() const {
     return std::get<1>(m_value);
   } else if (std::holds_alternative<autodiff::var>(m_value)) {
     return std::get<1>(m_value);
+  } else if (std::holds_alternative<autodiff::var*>(m_value)) {
+    return *std::get<2>(m_value);
   } else {
-    auto& varRef = std::get<2>(m_value);
+    auto& varRef = std::get<3>(m_value);
     auto& leaves = varRef.problem->m_leaves;
-    return leaves[varRef.index];
+    return leaves(varRef.index);
   }
 }

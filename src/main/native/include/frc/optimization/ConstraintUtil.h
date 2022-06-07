@@ -6,13 +6,13 @@
 
 #include <type_traits>
 
-#include "Eigen/Core"
+#include "frc/EigenCore.h"
 
 namespace frc {
 
 template <class T>
 inline constexpr bool IsScalar =
     std::is_same_v<T, double> || std::is_same_v<T, int> ||
-    std::is_same_v<T, Eigen::Matrix<double, 1, 1>>;
+    std::is_same_v<T, frc::Matrixd<1, 1>>;
 
 }  // namespace frc

@@ -3,7 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "frc/optimization/EqualityConstraint.h"
-#include "frc/optimization/AutodiffWrapper.h"
 
 #include <utility>
 

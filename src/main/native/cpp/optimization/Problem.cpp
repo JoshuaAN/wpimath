@@ -325,7 +325,7 @@ Eigen::VectorXd Problem::SQP(const Eigen::Ref<const Eigen::VectorXd>& x) {
     lambda = step.block(x.rows(), 0, lambda.rows(), 1);
 
     for (int index : m_slackIndexes) {
-        currentX(index, 0) = std::min(currentX(index, 0), 0.0);
+        currentX(index, 0) = std::max(currentX(index, 0), 0.0);
     }
 
     std::cout << "x: " << currentX << std::endl;
